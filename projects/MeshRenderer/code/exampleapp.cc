@@ -8,8 +8,15 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+// Define these only in *one* .cc file.
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "render/tiny_gltf.h"
+
 
 using namespace Display;
+using namespace tinygltf;
 namespace Example
 {
 	//------------------------------------------------------------------------------
@@ -116,6 +123,33 @@ namespace Example
 			for (char i = 0; i < 4; i++)
 				std::cout << round(v.data[i]) << (i == 3 ? ")\n" : ", ");
 		}
+	}
+
+	int BeginParsing(const char* gltf_file)
+	{
+		Model model;
+		TinyGLTF loader;
+		std::string err;
+		std::string warn;
+
+		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "FILEPATH");
+
+		if (!warn.empty())
+		{
+			printf("Warn: %s\n", warn.c_str());
+		}
+
+		if (!err.empty())
+		{
+			printf("Err: %s\n", err.c_str());
+		}
+
+		if (!ret) {
+			printf("Failed to parse glTF\n");
+		return -1;
+		}
+		return 0;
+		// Summary
 	}
 
 	void
