@@ -1,2 +1,0 @@
-/usr/bin/ar qc librender.a CMakeFiles/render.dir/window.cc.o CMakeFiles/render.dir/MeshResource.cc.o CMakeFiles/render.dir/Camera.cc.o CMakeFiles/render.dir/TextureResource.cc.o CMakeFiles/render.dir/ShaderResource.cc.o CMakeFiles/render.dir/GraphicNode.cc.o CMakeFiles/render.dir/Lightning.cc.o CMakeFiles/render.dir/__/config.cc.o
-/usr/bin/ranlib librender.a
