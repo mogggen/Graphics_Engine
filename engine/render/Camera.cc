@@ -1,6 +1,8 @@
 #include "config.h"
 #include "render/Camera.h"
 
+namespace Display
+{
 Camera::Camera(float fov, float aspect, float n, float f) : fov(fov), aspect(aspect), n(n), f(f)
 {
 	pos = V4(0, 0, 0);
@@ -26,4 +28,5 @@ void Camera::setRot(V4 dir, float rad)
 M4 Camera::pv()
 {
 	return projection(fov, aspect, n, f) * Rotation(dir, rad) * Translate(pos);
+}
 }

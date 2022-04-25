@@ -3,16 +3,17 @@
 // (C) 2015-2020 Individual contributors, see AUTHORS file
 //------------------------------------------------------------------------------
 #include "config.h"
-#include "stb_image.h"
 #include "exampleapp.h"
 #include <iostream>
 #include <fstream>
 #include <cstring>
 // Define these only in *one* .cc file.
 #define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "render/tiny_gltf.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "render/stb_image.h"
 
 
 using namespace Display;
@@ -158,7 +159,7 @@ namespace Example
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		node->getTexture()->LoadFromFile();
-		Camera cam(90, (float)width / height, 0.01f, 100.0f);
+		Display::Camera cam(90, (float)width / height, 0.01f, 100.0f);
 		cam.setPos(V4(0, 0, -3));
 		cam.setRot(V4(0, 1, 0), M_PI);
 		Lightning light(V3(10, 10, 10), V3(1, 1, 1), .01f);
