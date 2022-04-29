@@ -126,14 +126,15 @@ namespace Example
 		}
 	}
 
-	int BeginParsing(const char* gltf_file)
+	int BeginParsing(Model& model, const char* gltf_file)
 	{
-		Model model;
 		TinyGLTF loader;
 		std::string err;
 		std::string warn;
 
-		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "FILEPATH");
+		bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, gltf_file);
+		
+		// check if (.glb or .gltf)
 
 		if (!warn.empty())
 		{
@@ -145,13 +146,23 @@ namespace Example
 			printf("Err: %s\n", err.c_str());
 		}
 
-		if (!ret) {
+		if (!ret)
+		{
 			printf("Failed to parse glTF\n");
-		return -1;
+			return -1;
 		}
 		return 0;
 		// Summary
 	}
+
+	struct Info
+	{
+		uint position;
+		uint tangent;
+		uint normal;
+		uint texels;
+		uint indices;
+	};
 
 	void
 		ExampleApp::Run()
@@ -163,6 +174,79 @@ namespace Example
 		cam.setPos(V4(0, 0, -3));
 		cam.setRot(V4(0, 1, 0), M_PI);
 		Lightning light(V3(10, 10, 10), V3(1, 1, 1), .01f);
+		
+		Model model;
+		std::vector<Info> info;
+		if (BeginParsing(model, "textures/content/FlightHelmet.gltf") != 0)
+		{
+			printf("parsing gave up!");
+			return;
+		}
+		// coordinates
+		// texture coordinates
+		// normals
+		// indices
+		// materials
+
+		size_t meshlen = model.meshes.size();
+		for (size_t i = 0; i < meshlen; i++)
+		{
+			size_t primlen = model.meshes[i].primitives.size();
+			for (size_t j = 0; j < primlen; j++)
+			{
+
+				// Accessor
+				Accessor position = model.accessors[model.meshes[i].primitives[j].attributes["POSITION"]];
+				Accessor tangent = model.accessors[model.meshes[i].primitives[j].attributes["TANGENT"]];
+				Accessor normal = model.accessors[model.meshes[i].primitives[j].attributes["NORMAL"]];
+				Accessor texels = model.accessors[model.meshes[i].primitives[j].attributes["TEXCOORD_0"]];
+				Accessor indices = model.accessors[model.meshes[i].primitives[j].indices];
+
+
+				// position
+				size_t position_byteLength = model.bufferViews[position.bufferView].byteLength;
+				size_t position_byteOffset = model.bufferViews[position.bufferView].byteOffset;
+				size_t position_byteStride = model.bufferViews[position.bufferView].byteStride;
+				size_t position_buffer = model.bufferViews[position.bufferView].buffer;
+				
+
+				// tangent
+				size_t tangent_byteLength = model.bufferViews[tangent.bufferView].byteLength;
+				size_t tangent_byteOffset = model.bufferViews[tangent.bufferView].byteOffset;
+				size_t tangent_byteStride = model.bufferViews[tangent.bufferView].byteStride;
+				size_t tangent_buffer = model.bufferViews[tangent.bufferView].buffer;
+
+
+				// normals
+				size_t normal_byteLength = model.bufferViews[normal.bufferView].byteLength;
+				size_t normal_byteOffset = model.bufferViews[normal.bufferView].byteOffset;
+				size_t normal_byteStride = model.bufferViews[normal.bufferView].byteStride;
+				size_t normal_buffer = model.bufferViews[normal.bufferView].buffer;
+
+
+				// texels
+				size_t texels_byteLength = model.bufferViews[texels.bufferView].byteLength;
+				size_t texels_byteOffset = model.bufferViews[texels.bufferView].byteOffset;
+				size_t texels_byteStride = model.bufferViews[texels.bufferView].byteStride;
+				size_t texels_buffer = model.bufferViews[texels.bufferView].buffer;
+				
+
+				// indices
+				size_t indices_byteLength = model.bufferViews[indices.bufferView].byteLength;
+				size_t indices_byteOffset = model.bufferViews[indices.bufferView].byteOffset;
+				size_t indices_byteStride = model.bufferViews[indices.bufferView].byteStride;
+				size_t indices_buffer = model.bufferViews[indices.bufferView].buffer;
+				size_t indices_indicesCount = indices.count;
+			}
+			//textures
+			size_t imglen = model.images.size();
+			for (size_t j = 0; j < imglen; j++)
+			{
+				model.images[j].bits;
+				model.images[j].bufferView;
+				model.images[j].uri;
+			}
+		}
 		
 		float speed = .08f;
 
