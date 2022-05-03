@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <iterator>
 // Define these only in *one* .cc file.
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -126,7 +127,7 @@ namespace Example
 		}
 	}
 
-	int BeginParsing(Model& model, const char* gltf_file)
+	bool BeginParsing(Model& model, const char* gltf_file)
 	{
 		TinyGLTF loader;
 		std::string err;
@@ -138,20 +139,19 @@ namespace Example
 
 		if (!warn.empty())
 		{
-			printf("Warn: %s\n", warn.c_str());
+			printf("Warning: %s\n", warn.c_str());
 		}
 
 		if (!err.empty())
 		{
-			printf("Err: %s\n", err.c_str());
+			printf("Error: %s\n", err.c_str());
 		}
 
 		if (!ret)
 		{
-			printf("Failed to parse glTF\n");
-			return -1;
+			printf("Error: Failed to parse glTF\n");
 		}
-		return 0;
+		return ret;
 		// Summary
 	}
 
@@ -177,7 +177,8 @@ namespace Example
 		
 		Model model;
 		std::vector<Info> info;
-		if (BeginParsing(model, "textures/content/FlightHelmet.gltf") != 0)
+		Image texture_img;
+		if (!BeginParsing(model, "textures/content/FlightHelmet.gltf"))
 		{
 			printf("parsing gave up!");
 			return;
@@ -187,6 +188,7 @@ namespace Example
 		// normals
 		// indices
 		// materials
+		
 
 		size_t meshlen = model.meshes.size();
 		for (size_t i = 0; i < meshlen; i++)
@@ -201,7 +203,7 @@ namespace Example
 				Accessor normal = model.accessors[model.meshes[i].primitives[j].attributes["NORMAL"]];
 				Accessor texels = model.accessors[model.meshes[i].primitives[j].attributes["TEXCOORD_0"]];
 				Accessor indices = model.accessors[model.meshes[i].primitives[j].indices];
-
+				int materialBufferIndex = model.meshes[i].primitives[j].material;
 
 				// position
 				size_t position_byteLength = model.bufferViews[position.bufferView].byteLength;
@@ -237,14 +239,45 @@ namespace Example
 				size_t indices_byteStride = model.bufferViews[indices.bufferView].byteStride;
 				size_t indices_buffer = model.bufferViews[indices.bufferView].buffer;
 				size_t indices_indicesCount = indices.count;
-			}
-			//textures
-			size_t imglen = model.images.size();
-			for (size_t j = 0; j < imglen; j++)
-			{
-				model.images[j].bits;
-				model.images[j].bufferView;
-				model.images[j].uri;
+			
+				//textures
+				tinygltf::TextureInfo baseColorTexture = model.materials[materialBufferIndex].pbrMetallicRoughness.baseColorTexture;
+				int w, h, c = model.images[baseColorTexture.index].component;
+				if (baseColorTexture.index != -1)
+				{
+					if (strcmp(model.images[baseColorTexture.index].uri.c_str(), ""))
+					{
+						unsigned char* temp = stbi_load_from_memory(&model.images[baseColorTexture.index].image[0], model.images[baseColorTexture.index].image.size(), &w, &h, &c, 0);
+						for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
+						{
+							texture_img.image.push_back(temp[i]);
+						}
+						delete[] temp;
+					}
+					else
+					{
+						unsigned char* temp = stbi_load((std::string("texture/content/") + model.images[baseColorTexture.index].uri).c_str(), &w, &h, &c, 0);
+						for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
+						{
+							texture_img.image.push_back(temp[i]);
+						}
+						delete[] temp;
+					}	
+
+					if (stbi_failure_reason())
+					{
+						std::cerr << "cannot load " << std::string("texture/content/") + model.images[baseColorTexture.index].uri << ": " << stbi_failure_reason() << std::endl;
+					}
+				}
+				else
+				{
+					unsigned char* temp = stbi_load("texture/default.png", &w, &h, &c, 0);
+					for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
+					{
+						texture_img.image.push_back(temp[i]);
+					}
+					delete[] temp;
+				}
 			}
 		}
 		
