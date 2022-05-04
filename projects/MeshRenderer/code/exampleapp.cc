@@ -245,7 +245,7 @@ namespace Example
 				int w, h, c = model.images[baseColorTexture.index].component;
 				if (baseColorTexture.index != -1)
 				{
-					if (strcmp(model.images[baseColorTexture.index].uri.c_str(), ""))
+					if (!strcmp(model.images[baseColorTexture.index].uri.c_str(), ""))
 					{
 						unsigned char* temp = stbi_load_from_memory(&model.images[baseColorTexture.index].image[0], model.images[baseColorTexture.index].image.size(), &w, &h, &c, 0);
 						for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
@@ -253,25 +253,32 @@ namespace Example
 							texture_img.image.push_back(temp[i]);
 						}
 						delete[] temp;
+
+						if (stbi_failure_reason())
+						{
+							std::cerr << "cannot load Image from memory: " << stbi_failure_reason() << std::endl;
+						}
 					}
 					else
 					{
-						unsigned char* temp = stbi_load((std::string("texture/content/") + model.images[baseColorTexture.index].uri).c_str(), &w, &h, &c, 0);
+						unsigned char* temp = stbi_load((std::string("textures/content/") + model.images[baseColorTexture.index].uri).c_str(), &w, &h, &c, 0);
 						for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
 						{
 							texture_img.image.push_back(temp[i]);
 						}
 						delete[] temp;
+
+						if (stbi_failure_reason())
+						{
+							std::cerr << "cannot load " << std::string("textures/content/") + model.images[baseColorTexture.index].uri << ": " << stbi_failure_reason() << std::endl;
+						}
 					}	
 
-					if (stbi_failure_reason())
-					{
-						std::cerr << "cannot load " << std::string("texture/content/") + model.images[baseColorTexture.index].uri << ": " << stbi_failure_reason() << std::endl;
-					}
+					
 				}
 				else
 				{
-					unsigned char* temp = stbi_load("texture/default.png", &w, &h, &c, 0);
+					unsigned char* temp = stbi_load("textures/default.png", &w, &h, &c, 0);
 					for (size_t i = 0; i < w*h*c/*sizeof(temp) / sizeof(unsigned char*)*/; i++)
 					{
 						texture_img.image.push_back(temp[i]);
