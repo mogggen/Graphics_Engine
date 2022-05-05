@@ -680,8 +680,8 @@ struct M4
 	inline M4();
 	inline M4(V4 v[4]);
 
+	void Identity();
 	void Transpose();
-	
 };
 
 M4::M4()
@@ -695,6 +695,14 @@ M4::M4(V4 v[4])
 {
 	for (char i = 0; i < 4; i++)
 		(*this)[i] = v[i];
+}
+
+inline void M4::Identity()
+{
+	for (size_t i = 0; i < 16; i++)
+	{
+		(*this)[i / 4][i % 4] = i / 4 == i % 4;
+	}
 }
 
 inline V4 M4::operator[](char index) const
@@ -721,6 +729,16 @@ inline V4 operator*(M4 left, V4 right)
 	for (char i = 0; i < 16; i++)
 		temp[(i / 4) % 4] += left[(i / 4) % 4][i % 4] * right[i % 4];
 
+	return temp;
+}
+
+inline M4 Identity()
+{
+	M4 temp;
+	for (size_t i = 0; i < 16; i++)
+	{
+		temp[i / 4][i % 4] = i / 4 == i % 4;
+	}
 	return temp;
 }
 

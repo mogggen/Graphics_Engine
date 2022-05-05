@@ -2,7 +2,7 @@
 #include "render/GraphicNode.h"
 
 
-GraphicNode::GraphicNode(std::shared_ptr<MeshResource> geometry, std::shared_ptr<TextureResource> texture, std::shared_ptr<ShaderResource> shader, M4 transform) : Geometry(geometry), Texture(texture), Shader(shader), Transform(transform)
+GraphicNode::GraphicNode(std::shared_ptr<MeshResource> geometry, std::shared_ptr<TextureResource> texture, std::shared_ptr<ShaderResource> shader, M4 transform=Identity()) : Geometry(geometry), Texture(texture), Shader(shader), Transform(transform)
 {
 	Transform = Translate(V4());
 }
