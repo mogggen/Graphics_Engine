@@ -1,8 +1,6 @@
 #pragma once
 #include "core/MathLibrary.h"
 
-namespace Display
-{
 class Camera
 {
 	float fov, aspect, n, f;
@@ -16,4 +14,3 @@ public:
 	void setRot(V4 dir, float theta);
 	M4 pv();
 };
-}

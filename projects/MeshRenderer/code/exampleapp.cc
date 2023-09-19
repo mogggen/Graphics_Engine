@@ -3,20 +3,13 @@
 // (C) 2015-2020 Individual contributors, see AUTHORS file
 //------------------------------------------------------------------------------
 #include "config.h"
+#include "stb_image.h"
 #include "exampleapp.h"
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include <iterator>
-// Define these only in *one* .cc file.
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-#include "render/stb_image.h"
-#include "gltfLoader.h"
-
 
 using namespace Display;
-using namespace tinygltf;
 namespace Example
 {
 	//------------------------------------------------------------------------------
@@ -93,10 +86,33 @@ namespace Example
 
 			//MeshResource
 
-			cube = MeshResource::LoadObj("textures/fireHydrant.obj");
+			std::shared_ptr<tinygltf::Model> model = GraphicNode::load_gltf("textures/Avocado.gltf");
+			//cube = MeshResource::LoadObj("textures/cube.obj");
+			cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*model));
 
 			//TextureResource
-			std::shared_ptr<TextureResource> texture = std::make_shared<TextureResource>("textures/cubepic.png");
+			std::shared_ptr<TextureResource> texture;
+			
+			for (const tinygltf::Material& material : model->materials)
+			{
+				const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
+				const int normalMapIndex = material.normalTexture.index;
+				texture = std::make_shared<TextureResource>("textures/" + model->images[baseColorIndex].uri);
+
+				texture->LoadTextureFromFile();
+				texture->LoadNormalMapFromFile("textures/" + model->images[normalMapIndex].uri);
+				//const unsigned char* texBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
+				//int texW = model->images[baseColorIndex].width;
+				//int texH = model->images[baseColorIndex].height;
+				//int texComp = model->images[baseColorIndex].component;
+				//texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
+
+				//const unsigned char* normalBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
+				//int normalW = model->images[normalMapIndex].width;
+				//int normalH = model->images[normalMapIndex].height;
+				//int normalComp = model->images[normalMapIndex].component;
+				//texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
+			}
 
 			//shaderObject
 			shaderResource = std::make_shared<ShaderResource>();
@@ -104,6 +120,19 @@ namespace Example
 			
 			//GraphicNode
 			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4Zero));
+
+			for (const tinygltf::Camera& camera : model->cameras)
+			{
+				if (camera.type == "perspective")
+				{
+					const tinygltf::PerspectiveCamera& per = camera.perspective;
+					per.yfov;
+					per.aspectRatio;
+					per.znear;
+					per.zfar;
+					cam = std::make_shared<Camera>(per.yfov, per.aspectRatio, per.znear, per.zfar);
+				}
+			}
 
 			return true;
 		}
@@ -125,38 +154,31 @@ namespace Example
 		}
 	}
 
-	
-
-
 	void
 		ExampleApp::Run()
 	{
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		node->getTexture()->LoadFromFile();
-		Display::Camera cam(90, (float)width / height, 0.01f, 100.0f);
-		cam.setPos(V4(0, 0, -3));
-		cam.setRot(V4(0, 1, 0), M_PI);
+
+		if (cam == nullptr)
+		{
+			cam = std::make_shared<Camera>(90, (float)width / height, 0.01f, 1000.0f);
+		}
 		Lightning light(V3(10, 10, 10), V3(1, 1, 1), .01f);
 		
-		std::vector<Info> info;
-		load_gltf(info);
+		//std::shared_ptr<MeshResource> mm = std::make_shared<MeshResource>(nullptr);
 
-		float speed = .08f;
+		float speed = .008f;
 
-		M4 scene;
-		V4 color(1, 1, 1, 1);
-		
 		while (this->window->IsOpen())
 		{
 			Em = Em * Translate(Normalize(V4(float(d - a), float(e - q), float(w - s))) * speed);
-			scene = cam.pv() * (Em * Evp) * Translate(V4Zero) * Scalar(V4(.1, .1, .1)); // scaling because i can
+			//scene = cam->pv() * (Em * Evp) * Translate(V4Zero);// *Scalar(V4(10, 10, 10)); // scaling because i can
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			this->window->Update();
 
-			shaderResource->setM4(cam.pv(), "m4ProjViewPos");
-			light.bindLight(shaderResource, cam.getPos());
-			node->DrawScene(scene, color);
+			light.bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
+			node->DrawScene(Em * Translate(V4(0, 0, -1, 1)) * Scalar(V4(10, 10, 10, 1)), Evp, cam->pv());
 			this->window->SwapBuffers();
 		}
 	}

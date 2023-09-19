@@ -41,6 +41,7 @@ namespace Example
 		GLuint vertexShader;
 		GLuint pixelShader;
 
+		std::shared_ptr<Camera> cam;
 		std::shared_ptr<MeshResource> cube;
 		std::shared_ptr<ShaderResource> shaderResource;
 		std::shared_ptr<GraphicNode> node;

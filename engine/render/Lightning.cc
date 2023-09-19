@@ -45,8 +45,9 @@ float Lightning::getIntensity()
     return intensity;
 }
 
-void Lightning::bindLight( std::shared_ptr<ShaderResource> shader, V3 cameraPos)
+void Lightning::bindLight(const std::shared_ptr<ShaderResource> shader, V3 cameraPos, GLuint normalMapId)
 {
+    shader->setInt(normalMapId, "normalMap");
     shader->setV3(rgb, "lightColor");
     shader->setV3(pos, "lightPos");
     shader->setFloat(1, "lightIntensity");

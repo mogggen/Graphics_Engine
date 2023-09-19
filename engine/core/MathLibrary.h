@@ -749,11 +749,7 @@ inline void M4::Transpose()
 	{
 		temp[i / 4][i % 4] = temp[i % 4][i / 4];
 	}
-	for (char i = 0; i < 16; i++)
-	{
-		temp[i % 4][i / 4] = temp[i % 4][i / 4];
-	}
-		*this = temp;
+	*this = temp;
 }
 
 inline M4 Transpose(M4 matrix)

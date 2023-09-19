@@ -6,6 +6,9 @@
 #include "window.h"
 #include <imgui.h>
 #include "imgui_impl_glfw_gl3.h"
+#include <nanovg.h>
+#define NANOVG_GL3_IMPLEMENTATION 1
+#include "nanovg_gl.h"
 
 namespace Display
 {
@@ -62,6 +65,7 @@ int32 Window::WindowCount = 0;
 */
 Window::Window() :
 	window(nullptr),
+	vg(nullptr),
 	width(1920),
 	height(1200),
 	title("StreetWalker")
@@ -251,6 +255,9 @@ Window::Open()
 	ImGui_ImplGlfwGL3_Init(this->window, false);
 	glfwSetCharCallback(window, ImGui_ImplGlfwGL3_CharCallback);
 
+	// setup nanovg
+	this->vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+
 	// increase window count and return result
 	Window::WindowCount++;
 	return this->window != nullptr;
@@ -301,6 +308,16 @@ Window::SwapBuffers()
 {
 	if (this->window)
 	{
+		if (nullptr != this->nanoFunc)
+		{
+			int32 fbWidth, fbHeight;
+			glClear(GL_STENCIL_BUFFER_BIT);
+			glfwGetWindowSize(this->window, &this->width, &this->height);
+			glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+			nvgBeginFrame(this->vg, this->width, this->height, (float)fbWidth / (float) this->width);
+			this->nanoFunc(this->vg);
+			nvgEndFrame(this->vg);
+		}
 		if (nullptr != this->uiFunc)
 		{
 			ImGui_ImplGlfwGL3_NewFrame();

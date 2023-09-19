@@ -21,5 +21,5 @@ public:
     void setIntensity(float _intensity);
     float getIntensity();
 
-    void bindLight(std::shared_ptr<ShaderResource> shader, V3 cameraPos);
+    void bindLight(std::shared_ptr<ShaderResource> shader, V3 cameraPos, GLuint normalMapId);
 };

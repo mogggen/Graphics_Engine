@@ -93,6 +93,12 @@ void ShaderResource::setFloat(float32 facIn, std::string parameterName)
 	glUniform1f(glGetUniformLocation(program, parameterName.c_str()), facIn);
 }
 
+void ShaderResource::setInt(int idIn, std::string parameterName)
+{
+	glUseProgram(program);
+	glUniform1i(glGetUniformLocation(program, parameterName.c_str()), idIn);	
+}
+
 void ShaderResource::setV1(float32 vecIn, std::string parameterName)
 {
 	glUseProgram(program);
