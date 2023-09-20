@@ -10,7 +10,7 @@ void TextureResource::LoadTextureFromFile()
 {
 	int imgWidth, imgHeight, nrChannels;
 
-	unsigned char* img = stbi_load(file.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
+	const unsigned char* img = stbi_load(file.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
 	if (img == nullptr)
 	{
 		printf("Image loaded incorrectly");
@@ -41,7 +41,7 @@ void TextureResource::LoadNormalMapFromFile(const std::string& normalMapPath)
 {
 	int imgWidth, imgHeight, nrChannels;
 
-	unsigned char* img = stbi_load(normalMapPath.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
+	const unsigned char* img = stbi_load(normalMapPath.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
 	if (img == nullptr)
 	{
 		printf("Image loaded incorrectly");
@@ -68,7 +68,7 @@ void TextureResource::LoadNormalMapFromFile(const std::string& normalMapPath)
 	BindNormalMap();
 }
 
-void TextureResource::LoadTextureFromModel(const unsigned char* texture, int w, int h, int comp)
+void TextureResource::LoadTextureFromModel(const unsigned char* textureBuf, int w, int h, int comp)
 {
 	glGenTextures(1, (GLuint*)(&texture));
 
@@ -77,19 +77,19 @@ void TextureResource::LoadTextureFromModel(const unsigned char* texture, int w, 
 
 	if (comp == 3)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBuf);
 	}
 
 	else if (comp == 4)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuf);
 	}
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	BindTexture();
 }
-void TextureResource::LoadNormalMapFromModel(const unsigned char* normalMap, int w, int h, int comp)
+void TextureResource::LoadNormalMapFromModel(const unsigned char* normalMapBuf, int w, int h, int comp)
 {
 	glGenTextures(1, (GLuint*)(&normalMap));
 
@@ -98,12 +98,12 @@ void TextureResource::LoadNormalMapFromModel(const unsigned char* normalMap, int
 
 	if (comp == 3)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, normalMap);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, normalMapBuf);
 	}
 
 	else if (comp == 4)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMap);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMapBuf);
 	}
 
 	glGenerateMipmap(GL_TEXTURE_2D);

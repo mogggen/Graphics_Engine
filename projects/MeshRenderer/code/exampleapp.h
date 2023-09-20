@@ -30,6 +30,7 @@ namespace Example
 		/// run app
 		void Run();
 	private:
+		size_t frameIndex = 0;
 		int width, height;
 		float64 prevX = 0, prevY = 0;
 		float64 senseX = 0, senseY = 0;
@@ -41,6 +42,7 @@ namespace Example
 		GLuint vertexShader;
 		GLuint pixelShader;
 
+		std::shared_ptr<tinygltf::Model> model;
 		std::shared_ptr<Camera> cam;
 		std::shared_ptr<MeshResource> cube;
 		std::shared_ptr<ShaderResource> shaderResource;

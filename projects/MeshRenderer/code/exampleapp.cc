@@ -86,33 +86,55 @@ namespace Example
 
 			//MeshResource
 
-			std::shared_ptr<tinygltf::Model> model = GraphicNode::load_gltf("textures/Avocado.gltf");
+			model = GraphicNode::load_gltf("textures/Avocado.glb");
+			model = GraphicNode::load_gltf("textures/Avocado.gltf");
 			//cube = MeshResource::LoadObj("textures/cube.obj");
-			cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*model));
-
-			//TextureResource
-			std::shared_ptr<TextureResource> texture;
+			std::shared_ptr<TextureResource> texture = std::make_shared<TextureResource>("textures/test.jpg");
 			
-			for (const tinygltf::Material& material : model->materials)
+			//TextureResource
+			
+			if (model != nullptr)
 			{
-				const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
-				const int normalMapIndex = material.normalTexture.index;
-				texture = std::make_shared<TextureResource>("textures/" + model->images[baseColorIndex].uri);
+				cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*model));
+				
+				if (!model->materials.empty())
+				{
+					const tinygltf::Material& material = model->materials[0];
+					const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
+					if (baseColorIndex != -1)
+					{
+						const unsigned char* texBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
+						int texW = model->images[baseColorIndex].width;
+						int texH = model->images[baseColorIndex].height;
+						int texComp = model->images[baseColorIndex].component;
+						texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
+					}
+					else
+					{
+						texture->LoadTextureFromFile();
+					}
 
-				texture->LoadTextureFromFile();
-				texture->LoadNormalMapFromFile("textures/" + model->images[normalMapIndex].uri);
-				//const unsigned char* texBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
-				//int texW = model->images[baseColorIndex].width;
-				//int texH = model->images[baseColorIndex].height;
-				//int texComp = model->images[baseColorIndex].component;
-				//texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
-
-				//const unsigned char* normalBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
-				//int normalW = model->images[normalMapIndex].width;
-				//int normalH = model->images[normalMapIndex].height;
-				//int normalComp = model->images[normalMapIndex].component;
-				//texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
+					const int normalMapIndex = material.normalTexture.index;
+					if (normalMapIndex != -1)
+					{
+						const unsigned char* normalBuf = (const unsigned char*)(&model->images[normalMapIndex].image[0]);
+						int normalW = model->images[normalMapIndex].width;
+						int normalH = model->images[normalMapIndex].height;
+						int normalComp = model->images[normalMapIndex].component;
+						texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
+					}
+					else
+					{
+						texture->LoadNormalMapFromFile("textures/perfect.jpg");
+					}
+				}
+				else
+				{
+					texture->LoadTextureFromFile();
+					texture->LoadNormalMapFromFile("textures/perfect.jpg");
+				}
 			}
+
 
 			//shaderObject
 			shaderResource = std::make_shared<ShaderResource>();
@@ -121,16 +143,19 @@ namespace Example
 			//GraphicNode
 			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4Zero));
 
-			for (const tinygltf::Camera& camera : model->cameras)
+			if (model != nullptr)
 			{
-				if (camera.type == "perspective")
+				for (const tinygltf::Camera& camera : model->cameras)
 				{
-					const tinygltf::PerspectiveCamera& per = camera.perspective;
-					per.yfov;
-					per.aspectRatio;
-					per.znear;
-					per.zfar;
-					cam = std::make_shared<Camera>(per.yfov, per.aspectRatio, per.znear, per.zfar);
+					if (camera.type == "perspective")
+					{
+						const tinygltf::PerspectiveCamera& per = camera.perspective;
+						per.yfov;
+						per.aspectRatio;
+						per.znear;
+						per.zfar;
+						cam = std::make_shared<Camera>(per.yfov, per.aspectRatio, per.znear, per.zfar);
+					}
 				}
 			}
 
@@ -164,14 +189,16 @@ namespace Example
 		{
 			cam = std::make_shared<Camera>(90, (float)width / height, 0.01f, 1000.0f);
 		}
-		Lightning light(V3(10, 10, 10), V3(1, 1, 1), .01f);
 		
-		//std::shared_ptr<MeshResource> mm = std::make_shared<MeshResource>(nullptr);
-
+		V3 timeOfDay;
+		Lightning light(timeOfDay, V3(1, 1, 1), .01f);
+		
 		float speed = .008f;
 
 		while (this->window->IsOpen())
 		{
+			timeOfDay = V3(10 * cosf(frameIndex / 100.f), -3, 10 * sinf(frameIndex / 100.f));
+			light.setPos(timeOfDay);
 			Em = Em * Translate(Normalize(V4(float(d - a), float(e - q), float(w - s))) * speed);
 			//scene = cam->pv() * (Em * Evp) * Translate(V4Zero);// *Scalar(V4(10, 10, 10)); // scaling because i can
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -180,6 +207,7 @@ namespace Example
 			light.bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
 			node->DrawScene(Em * Translate(V4(0, 0, -1, 1)) * Scalar(V4(10, 10, 10, 1)), Evp, cam->pv());
 			this->window->SwapBuffers();
+			frameIndex++;
 		}
 	}
 

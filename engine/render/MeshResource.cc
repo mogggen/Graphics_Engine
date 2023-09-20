@@ -181,18 +181,13 @@ std::shared_ptr<MeshResource> MeshResource::LoadObj(const char *pathToFile)
 	}
 	if (fs)
 		fclose(fs);
-	printf("loaded %s\n", pathToFile);
+	std::cout << "loaded " << pathToFile << std::endl;
+	
 	return std::make_shared<MeshResource>(&vertices[0], vertices.size(), &indices[0], indices.size());
 }
 
 std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& model)
 {
-	for (const tinygltf::Scene& scene : model.scenes)
-	{
-		//whatever
-		scene.nodes;
-	}
-
 	std::vector<Vertex> resVert; // complete
 
 	std::vector<float> tempPositionBuffer;
@@ -210,55 +205,68 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 	for (const tinygltf::Buffer& buffer : model.buffers)
 	{
 		std::vector<char> binaryData;
-		std::ifstream binFile("textures/" + buffer.uri, std::ios::binary | std::ios::ate);
+		//tinygltf::DecodeDataURI();
+		if (!buffer.uri.empty())
+		{
+			std::ifstream binFile("textures/" + buffer.uri, std::ios::binary | std::ios::ate);
 
-		if (binFile.is_open()) {
-            // Get the file size and allocate a buffer
-            std::streamsize fileSize = binFile.tellg();
-            binaryData.resize(fileSize);
+			if (binFile.is_open())
+			{
+				// Get the file size and allocate a buffer
+				std::streamsize fileSize = binFile.tellg();
+				binaryData.resize(fileSize);
 
-            // Seek back to the beginning and read the binary data
-            binFile.seekg(0, std::ios::beg);
-            binFile.read(binaryData.data(), fileSize);
-            binFile.close();
+				// Seek back to the beginning and read the binary data
+				binFile.seekg(0, std::ios::beg);
+				binFile.read(binaryData.data(), fileSize);
+				binFile.close();
 
-            // Now, you can use binaryData as your binary buffer
+				// Now, you can use binaryData as your binary buffer
+			}
+		}
+		else
+		{
+			assert(!buffer.data.empty());
+			binaryData = (std::vector<char>&)(buffer.data);
 		}
 
 		for (const tinygltf::Mesh& mesh : model.meshes)
 		{
 			for (const tinygltf::Primitive& primitive : mesh.primitives)
 			{
+				if (primitive.mode != TINYGLTF_MODE_TRIANGLES)
+				{
+					std::cerr << "this parser only handles triangle mode" << std::endl;
+					return nullptr;
+				}
+
 				// Access the accessor for position data
 				int positionAccessorIndex = primitive.attributes.at("POSITION");
 				const tinygltf::Accessor& positionAccessor = model.accessors[positionAccessorIndex];
 				const tinygltf::BufferView& positionBufferView = model.bufferViews[positionAccessor.bufferView];
-				const  char* positionData = &binaryData[positionBufferView.byteOffset];
+				const char* positionData = &binaryData[positionBufferView.byteOffset];
 
 				// Access the accessor for normals
 				int normalAccessorIndex = primitive.attributes.at("NORMAL");
 				const tinygltf::Accessor& normalAccessor = model.accessors[normalAccessorIndex];
 				const tinygltf::BufferView& normalBufferView = model.bufferViews[normalAccessor.bufferView];
-				const  char* normalData = &binaryData[normalBufferView.byteOffset];
+				const char* normalData = &binaryData[normalBufferView.byteOffset];
 
 
-				int tangentAccessorIndex = primitive.attributes.at("TANGENT");
-				const tinygltf::Accessor& tangentAccessor = model.accessors[tangentAccessorIndex];
-				const tinygltf::BufferView& tangentBufferView = model.bufferViews[tangentAccessor.bufferView];
-				const  char* tangentData = &binaryData[tangentBufferView.byteOffset];
+				//int tangentAccessorIndex = primitive.attributes.at("TANGENT");
+				//const tinygltf::Accessor& tangentAccessor = model.accessors[tangentAccessorIndex];
+				//const tinygltf::BufferView& tangentBufferView = model.bufferViews[tangentAccessor.bufferView];
+				//const char* tangentData = &binaryData[tangentBufferView.byteOffset];
 
 				// Access the accessor for normals
 				int texelAccessorIndex = primitive.attributes.at("TEXCOORD_0");
 				const tinygltf::Accessor& texelAccessor = model.accessors[texelAccessorIndex];
 				const tinygltf::BufferView& texelBufferView = model.bufferViews[texelAccessor.bufferView];
-				const  char* texelData = &binaryData[texelBufferView.byteOffset];
+				const char* texelData = &binaryData[texelBufferView.byteOffset];
 
 
 				// Access the accessor for indices (triangles)
 				int indicesAccessorIndex = primitive.indices;
-				if (primitive.mode == TINYGLTF_MODE_TRIANGLES)
-				{
-				}
 				const tinygltf::Accessor& indicesAccessor = model.accessors[indicesAccessorIndex];
 				const tinygltf::BufferView& indicesBufferView = model.bufferViews[indicesAccessor.bufferView];
 				const  char* indicesData = &binaryData[indicesBufferView.byteOffset];
@@ -349,13 +357,13 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 						{
 							position3[i],
 							tangent3.empty() ? V4(1, 1, 1, 1) : tangent3[i],
-							texel2[i],
-							normal3[i],
+							texel2.empty() ? V2(1, 1) : texel2[i],
+							normal3.empty() ? V3(0.5, 0.5, 0.5) : normal3[i],
 						});
 				}
 
 				// Iterate through indices data and convert to indices
-				for (size_t i = 0; i < indicesAccessor.count; ++i) {
+				for (size_t i = 0; i < indicesAccessor.count; i += 3) {
 					const void* indexPtr = indicesData + i * indicesAccessor.ByteStride(indicesBufferView);
 					if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
 					{
@@ -387,6 +395,7 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 			}
 		}
 	}
+	std::cout << "loaded " << model.meshes[0].name << std::endl;
 	return std::make_shared<MeshResource>(&resVert[0], resVert.size(), &tri_indices[0], tri_indices.size());
 }
 
