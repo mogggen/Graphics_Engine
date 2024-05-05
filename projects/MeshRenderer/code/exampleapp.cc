@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <ctime>
 
 using namespace Display;
 namespace Example
@@ -37,6 +38,8 @@ namespace Example
 	{
 		App::Open();
 		this->window = new Display::Window;
+
+		srand((unsigned)time(nullptr));
 
 		//assign ExampleApp variables
 		w = a = s = d = q = e = false;
@@ -78,6 +81,7 @@ namespace Example
 			}
 		});
 		
+		 // five randomly selected models: avocado, sphere, cube, pyramid, monkey, teapot
 
 		if (this->window->Open())
 		{
@@ -86,27 +90,27 @@ namespace Example
 
 			//MeshResource
 
-			model = GraphicNode::load_gltf("textures/Avocado.glb");
-			model = GraphicNode::load_gltf("textures/Avocado.gltf");
+			avocadoModel = GraphicNode::load_gltf("textures/Avocado.glb");
+			
 			//cube = MeshResource::LoadObj("textures/cube.obj");
 			std::shared_ptr<TextureResource> texture = std::make_shared<TextureResource>("textures/test.jpg");
 			
 			//TextureResource
 			
-			if (model != nullptr)
+			if (avocadoModel != nullptr)
 			{
-				cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*model));
+				cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*avocadoModel));
 				
-				if (!model->materials.empty())
+				if (!avocadoModel->materials.empty())
 				{
-					const tinygltf::Material& material = model->materials[0];
+					const tinygltf::Material& material = avocadoModel->materials[0];
 					const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
 					if (baseColorIndex != -1)
 					{
-						const unsigned char* texBuf = (const unsigned char*)(&model->images[baseColorIndex].image[0]);
-						int texW = model->images[baseColorIndex].width;
-						int texH = model->images[baseColorIndex].height;
-						int texComp = model->images[baseColorIndex].component;
+						const unsigned char* texBuf = (const unsigned char*)(&avocadoModel->images[baseColorIndex].image[0]);
+						int texW = avocadoModel->images[baseColorIndex].width;
+						int texH = avocadoModel->images[baseColorIndex].height;
+						int texComp = avocadoModel->images[baseColorIndex].component;
 						texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
 					}
 					else
@@ -117,10 +121,10 @@ namespace Example
 					const int normalMapIndex = material.normalTexture.index;
 					if (normalMapIndex != -1)
 					{
-						const unsigned char* normalBuf = (const unsigned char*)(&model->images[normalMapIndex].image[0]);
-						int normalW = model->images[normalMapIndex].width;
-						int normalH = model->images[normalMapIndex].height;
-						int normalComp = model->images[normalMapIndex].component;
+						const unsigned char* normalBuf = (const unsigned char*)(&avocadoModel->images[normalMapIndex].image[0]);
+						int normalW = avocadoModel->images[normalMapIndex].width;
+						int normalH = avocadoModel->images[normalMapIndex].height;
+						int normalComp = avocadoModel->images[normalMapIndex].component;
 						texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
 					}
 					else
@@ -143,9 +147,9 @@ namespace Example
 			//GraphicNode
 			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4Zero));
 
-			if (model != nullptr)
+			if (avocadoModel != nullptr)
 			{
-				for (const tinygltf::Camera& camera : model->cameras)
+				for (const tinygltf::Camera& camera : avocadoModel->cameras)
 				{
 					if (camera.type == "perspective")
 					{
@@ -191,20 +195,49 @@ namespace Example
 		}
 		
 		V3 timeOfDay;
-		Lightning light(timeOfDay, V3(1, 1, 1), .01f);
 		
+		std::vector<std::shared_ptr<tinygltf::Model>> models(5);
+		models[0] = GraphicNode::load_gltf("textures/quad.gltf");
+		models[1] = GraphicNode::load_gltf("textures/cube.gltf");
+		models[2] = GraphicNode::load_gltf("textures/sphere.gltf");
+		models[3] = GraphicNode::load_gltf("textures/pyramid.gltf");
+		models[4] = GraphicNode::load_gltf("textures/Avocado.gltf");
+
+		
+		std::vector<Lighting> lightSources(20);
+
+		for (size_t i = 0; i < lightSources.size(); i++)
+		{
+			lightSources[i] = Lighting();
+			// calculate slightly random offsets
+			float xPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+			float yPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
+			float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+			lightSources[i].setPos(V3(xPos, yPos, zPos));
+			// also calculate random color
+			float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+			float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+			float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+			lightSources[i].setColor(V3(rColor, gColor, bColor));
+		}
+
 		float speed = .008f;
 
 		while (this->window->IsOpen())
 		{
 			timeOfDay = V3(10 * cosf(frameIndex / 100.f), -3, 10 * sinf(frameIndex / 100.f));
-			light.setPos(timeOfDay);
+			for (size_t i = 0; i < lightSources.size(); i++)
+			{
+				lightSources[i].setPos(lightSources[i].getPos() + timeOfDay);
+			}
+
 			Em = Em * Translate(Normalize(V4(float(d - a), float(e - q), float(w - s))) * speed);
 			//scene = cam->pv() * (Em * Evp) * Translate(V4Zero);// *Scalar(V4(10, 10, 10)); // scaling because i can
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			this->window->Update();
 
-			light.bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
+			// TODO: this will work diffrently
+			lightSources[rand() % lightSources.size()].bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
 			node->DrawScene(Em * Translate(V4(0, 0, -1, 1)) * Scalar(V4(10, 10, 10, 1)), Evp, cam->pv());
 			this->window->SwapBuffers();
 			frameIndex++;

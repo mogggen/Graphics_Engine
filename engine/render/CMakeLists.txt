@@ -23,8 +23,8 @@ SET(files_render_display
 	GraphicNode.h
 	GraphicNode.cc
 
-	Lightning.h
-	Lightning.cc
+	Lighting.h
+	Lighting.cc
 
 	stb_image_write.h
 	tiny_gltf.h

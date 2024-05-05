@@ -42,7 +42,12 @@ namespace Example
 		GLuint vertexShader;
 		GLuint pixelShader;
 
-		std::shared_ptr<tinygltf::Model> model;
+		std::shared_ptr<tinygltf::Model> avocadoModel;
+		std::shared_ptr<tinygltf::Model> cubeModel;
+		std::shared_ptr<tinygltf::Model> pyramidModel;
+		std::shared_ptr<tinygltf::Model> sphereModel;
+		std::shared_ptr<tinygltf::Model> monkeyModel;
+
 		std::shared_ptr<Camera> cam;
 		std::shared_ptr<MeshResource> cube;
 		std::shared_ptr<ShaderResource> shaderResource;
