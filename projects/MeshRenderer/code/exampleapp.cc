@@ -145,7 +145,7 @@ namespace Example
 			shaderResource->getShaderResource(this->vertexShader, this->pixelShader, this->program);
 			
 			//GraphicNode
-			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4Zero));
+			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4()));
 
 			if (avocadoModel != nullptr)
 			{
