@@ -39,7 +39,7 @@ namespace Example
 		App::Open();
 		this->window = new Display::Window;
 
-		srand((unsigned)time(nullptr));
+		srand(69420);
 
 		//assign ExampleApp variables
 		w = a = s = d = q = e = false;
@@ -81,7 +81,6 @@ namespace Example
 			}
 		});
 		
-		 // five randomly selected models: avocado, sphere, cube, pyramid, monkey, teapot
 
 		if (this->window->Open())
 		{
@@ -191,13 +190,13 @@ namespace Example
 
 		if (cam == nullptr)
 		{
-			cam = std::make_shared<Camera>(90, (float)width / height, 0.01f, 1000.0f);
+			cam = std::make_shared<Camera>(90, (float)width / (float)height, 0.01f, 1000.0f);
 		}
 		
 		V3 timeOfDay;
 		
 		std::vector<std::shared_ptr<tinygltf::Model>> models(5);
-		models[0] = GraphicNode::load_gltf("textures/quad.gltf");
+		models[0] = GraphicNode::load_gltf("textures/Medival shield/model.gltf");
 		models[1] = GraphicNode::load_gltf("textures/cube.gltf");
 		models[2] = GraphicNode::load_gltf("textures/sphere.gltf");
 		models[3] = GraphicNode::load_gltf("textures/pyramid.gltf");
@@ -210,14 +209,15 @@ namespace Example
 		{
 			lightSources[i] = Lighting();
 			// calculate slightly random offsets
-			float xPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
-			float yPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
-			float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+			float zPos = ((rand() % 300) / 100.f) - 3.f;
+			float yPos = ((rand() % 300) / 100.f) - 4.f;
+			float xPos = ((rand() % 300) / 100.f) - 3.f;
 			lightSources[i].setPos(V3(xPos, yPos, zPos));
+
 			// also calculate random color
-			float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
-			float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
-			float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+			float rColor = .5f + (rand() % 500) / 500.f;
+			float gColor = .5f + (rand() % 500) / 500.f;
+			float bColor = .5f + (rand() % 500) / 500.f;
 			lightSources[i].setColor(V3(rColor, gColor, bColor));
 		}
 
@@ -229,6 +229,7 @@ namespace Example
 			for (size_t i = 0; i < lightSources.size(); i++)
 			{
 				lightSources[i].setPos(lightSources[i].getPos() + timeOfDay);
+				lightSources[i].bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
 			}
 
 			Em = Em * Translate(Normalize(V4(float(d - a), float(e - q), float(w - s))) * speed);
@@ -237,7 +238,6 @@ namespace Example
 			this->window->Update();
 
 			// TODO: this will work diffrently
-			lightSources[rand() % lightSources.size()].bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
 			node->DrawScene(Em * Translate(V4(0, 0, -1, 1)) * Scalar(V4(10, 10, 10, 1)), Evp, cam->pv());
 			this->window->SwapBuffers();
 			frameIndex++;

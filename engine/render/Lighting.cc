@@ -47,6 +47,7 @@ float Lighting::getIntensity()
 
 void Lighting::bindLight(const std::shared_ptr<ShaderResource> shader, V3 cameraPos, GLuint normalMapId)
 {
+    // TODO: send right Parameters
     shader->setInt(normalMapId, "normalMap");
     shader->setV3(rgb, "lightColor");
     shader->setV3(pos, "lightPos");
