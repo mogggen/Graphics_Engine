@@ -13,6 +13,17 @@
 using namespace Display;
 namespace Example
 {
+	static void Print(const M4& m)
+	{
+		for (size_t i = 0; i < 4; i++)
+		{
+			V4 v = m[(char)i];
+			std::cout << '(';
+			for (char j = 0; j < 4; j++)
+				std::cout << round(v.data[i]) << (i == 3 ? ")\n" : ", ");
+		}
+	}
+
 	//------------------------------------------------------------------------------
 	/**
 	*/
@@ -89,78 +100,109 @@ namespace Example
 
 			//MeshResource
 
-			avocadoModel = GraphicNode::load_gltf("textures/Avocado.glb");
-			
-			//cube = MeshResource::LoadObj("textures/cube.obj");
-			std::shared_ptr<TextureResource> texture = std::make_shared<TextureResource>("textures/test.jpg");
-			
-			//TextureResource
-			
-			if (avocadoModel != nullptr)
+			std::vector<std::shared_ptr<tinygltf::Model>> models(6);
+			models[0] = GraphicNode::load_gltf("textures/Medieval shield/model.gltf"); // segfault
+			models[1] = GraphicNode::load_gltf("textures/cube.gltf");
+			models[2] = GraphicNode::load_gltf("textures/AntiqueCamera.gltf");
+			models[3] = GraphicNode::load_gltf("textures/monkey.glb"); // too big
+			models[4] = GraphicNode::load_gltf("textures/Avocado.gltf");
+			models[5] = GraphicNode::load_gltf("textures/Avocado.gltf"); // have worked before
+
+			for (size_t i = 0; i < 1; i++)
 			{
-				cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*avocadoModel));
-				
-				if (!avocadoModel->materials.empty())
+				avocadoModel = models[4];
+
+				//avocadoModel = GraphicNode::load_gltf("textures/Avocado.glb");
+				std::shared_ptr<TextureResource> texture = std::make_shared<TextureResource>("textures/test.jpg");
+
+				//TextureResource
+
+				if (avocadoModel != nullptr)
 				{
-					const tinygltf::Material& material = avocadoModel->materials[0];
-					const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
-					if (baseColorIndex != -1)
+					cube = MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*avocadoModel));
+
+					if (!avocadoModel->materials.empty())
 					{
-						const unsigned char* texBuf = (const unsigned char*)(&avocadoModel->images[baseColorIndex].image[0]);
-						int texW = avocadoModel->images[baseColorIndex].width;
-						int texH = avocadoModel->images[baseColorIndex].height;
-						int texComp = avocadoModel->images[baseColorIndex].component;
-						texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
+						const tinygltf::Material& material = avocadoModel->materials[0];
+						const int baseColorIndex = material.pbrMetallicRoughness.baseColorTexture.index;
+						if (baseColorIndex != -1)
+						{
+							const unsigned char* texBuf = (const unsigned char*)(&avocadoModel->images[baseColorIndex].image[0]);
+							int texW = avocadoModel->images[baseColorIndex].width;
+							int texH = avocadoModel->images[baseColorIndex].height;
+							int texComp = avocadoModel->images[baseColorIndex].component;
+							texture->LoadTextureFromModel(texBuf, texW, texH, texComp);
+						}
+						else
+						{
+							texture->LoadTextureFromFile();
+						}
+
+						const int normalMapIndex = material.normalTexture.index;
+						if (normalMapIndex != -1)
+						{
+							const unsigned char* normalBuf = (const unsigned char*)(&avocadoModel->images[normalMapIndex].image[0]);
+							int normalW = avocadoModel->images[normalMapIndex].width;
+							int normalH = avocadoModel->images[normalMapIndex].height;
+							int normalComp = avocadoModel->images[normalMapIndex].component;
+							texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
+						}
+						else
+						{
+							texture->LoadNormalMapFromFile("textures/perfect.jpg");
+						}
 					}
 					else
 					{
 						texture->LoadTextureFromFile();
-					}
-
-					const int normalMapIndex = material.normalTexture.index;
-					if (normalMapIndex != -1)
-					{
-						const unsigned char* normalBuf = (const unsigned char*)(&avocadoModel->images[normalMapIndex].image[0]);
-						int normalW = avocadoModel->images[normalMapIndex].width;
-						int normalH = avocadoModel->images[normalMapIndex].height;
-						int normalComp = avocadoModel->images[normalMapIndex].component;
-						texture->LoadNormalMapFromModel(normalBuf, normalW, normalH, normalComp);
-					}
-					else
-					{
 						texture->LoadNormalMapFromFile("textures/perfect.jpg");
 					}
 				}
-				else
+
+
+				//shaderObject
+				shaderResource = std::make_shared<ShaderResource>();
+				shaderResource->getShaderResource(this->vertexShader, this->pixelShader, this->program);
+
+				//GraphicNode
+				node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4()));
+
+				if (avocadoModel != nullptr)
 				{
-					texture->LoadTextureFromFile();
-					texture->LoadNormalMapFromFile("textures/perfect.jpg");
-				}
-			}
-
-
-			//shaderObject
-			shaderResource = std::make_shared<ShaderResource>();
-			shaderResource->getShaderResource(this->vertexShader, this->pixelShader, this->program);
-			
-			//GraphicNode
-			node = std::make_shared<GraphicNode>(cube, texture, shaderResource, Translate(V4()));
-
-			if (avocadoModel != nullptr)
-			{
-				for (const tinygltf::Camera& camera : avocadoModel->cameras)
-				{
-					if (camera.type == "perspective")
+					for (const tinygltf::Camera& camera : avocadoModel->cameras)
 					{
-						const tinygltf::PerspectiveCamera& per = camera.perspective;
-						per.yfov;
-						per.aspectRatio;
-						per.znear;
-						per.zfar;
-						cam = std::make_shared<Camera>(per.yfov, per.aspectRatio, per.znear, per.zfar);
+						if (camera.type == "perspective")
+						{
+							const tinygltf::PerspectiveCamera& per = camera.perspective;
+							per.yfov;
+							per.aspectRatio;
+							per.znear;
+							per.zfar;
+							cam = std::make_shared<Camera>(per.yfov, per.aspectRatio, per.znear, per.zfar);
+						}
 					}
 				}
+
 			}
+
+			std::vector<Lighting> lightSources(20);
+
+			for (size_t i = 0; i < lightSources.size(); i++)
+			{
+				lightSources[i] = Lighting();
+				// calculate slightly random offsets
+				float zPos = ((rand() % 300) / 100.f) - 3.f;
+				float yPos = ((rand() % 300) / 100.f) - 4.f;
+				float xPos = ((rand() % 300) / 100.f) - 3.f;
+				lightSources[i].setPos(V3(xPos, yPos, zPos));
+
+				// also calculate random color
+				float rColor = .5f + (rand() % 500) / 500.f;
+				float gColor = .5f + (rand() % 500) / 500.f;
+				float bColor = .5f + (rand() % 500) / 500.f;
+				lightSources[i].setColor(V3(rColor, gColor, bColor));
+			}
+
 
 			return true;
 		}
@@ -170,17 +212,6 @@ namespace Example
 	//------------------------------------------------------------------------------
 	/**
 	*/
-
-	void Print(M4 m)
-	{
-		for (size_t i = 0; i < 4; i++)
-		{
-			V4 v = m[i];
-			std::cout << '(';
-			for (char i = 0; i < 4; i++)
-				std::cout << round(v.data[i]) << (i == 3 ? ")\n" : ", ");
-		}
-	}
 
 	void
 		ExampleApp::Run()
@@ -203,7 +234,7 @@ namespace Example
 		models[3] = GraphicNode::load_gltf("textures/pyramid.gltf");
 		models[4] = GraphicNode::load_gltf("textures/Avocado.gltf");*/
 
-		
+
 		//std::vector<Lighting> lightSources(20);
 
 		//for (size_t i = 0; i < lightSources.size(); i++)
