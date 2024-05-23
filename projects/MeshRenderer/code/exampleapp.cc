@@ -194,43 +194,44 @@ namespace Example
 		}
 		
 		V3 timeOfDay;
-		
+		Lighting light(timeOfDay, V3(1, 1, 1), .01f);
+
 		std::vector<std::shared_ptr<tinygltf::Model>> models(5);
-		models[0] = GraphicNode::load_gltf("textures/Medival shield/model.gltf");
+		/*models[0] = GraphicNode::load_gltf("textures/Medival shield/model.gltf");
 		models[1] = GraphicNode::load_gltf("textures/cube.gltf");
 		models[2] = GraphicNode::load_gltf("textures/sphere.gltf");
 		models[3] = GraphicNode::load_gltf("textures/pyramid.gltf");
-		models[4] = GraphicNode::load_gltf("textures/Avocado.gltf");
+		models[4] = GraphicNode::load_gltf("textures/Avocado.gltf");*/
 
 		
-		std::vector<Lighting> lightSources(20);
+		//std::vector<Lighting> lightSources(20);
 
-		for (size_t i = 0; i < lightSources.size(); i++)
-		{
-			lightSources[i] = Lighting();
-			// calculate slightly random offsets
-			float zPos = ((rand() % 300) / 100.f) - 3.f;
-			float yPos = ((rand() % 300) / 100.f) - 4.f;
-			float xPos = ((rand() % 300) / 100.f) - 3.f;
-			lightSources[i].setPos(V3(xPos, yPos, zPos));
+		//for (size_t i = 0; i < lightSources.size(); i++)
+		//{
+		//	lightSources[i] = Lighting();
+		//	// calculate slightly random offsets
+		//	float zPos = ((rand() % 300) / 100.f) - 3.f;
+		//	float yPos = ((rand() % 300) / 100.f) - 4.f;
+		//	float xPos = ((rand() % 300) / 100.f) - 3.f;
+		//	lightSources[i].setPos(V3(xPos, yPos, zPos));
 
-			// also calculate random color
-			float rColor = .5f + (rand() % 500) / 500.f;
-			float gColor = .5f + (rand() % 500) / 500.f;
-			float bColor = .5f + (rand() % 500) / 500.f;
-			lightSources[i].setColor(V3(rColor, gColor, bColor));
-		}
-
+		//	// also calculate random color
+		//	float rColor = .5f + (rand() % 500) / 500.f;
+		//	float gColor = .5f + (rand() % 500) / 500.f;
+		//	float bColor = .5f + (rand() % 500) / 500.f;
+		//	lightSources[i].setColor(V3(rColor, gColor, bColor));
+		//}
+		//
 		float speed = .008f;
 
 		while (this->window->IsOpen())
 		{
 			timeOfDay = V3(10 * cosf(frameIndex / 100.f), -3, 10 * sinf(frameIndex / 100.f));
-			for (size_t i = 0; i < lightSources.size(); i++)
+			light.setPos(timeOfDay);
+			/*for (size_t i = 0; i < lightSources.size(); i++)
 			{
 				lightSources[i].setPos(lightSources[i].getPos() + timeOfDay);
-				lightSources[i].bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
-			}
+			}*/
 
 			Em = Em * Translate(Normalize(V4(float(d - a), float(e - q), float(w - s))) * speed);
 			//scene = cam->pv() * (Em * Evp) * Translate(V4Zero);// *Scalar(V4(10, 10, 10)); // scaling because i can
@@ -238,6 +239,7 @@ namespace Example
 			this->window->Update();
 
 			// TODO: this will work diffrently
+			light.bindLight(shaderResource, cam->getPos(), node->getTexture()->normalMap);
 			node->DrawScene(Em * Translate(V4(0, 0, -1, 1)) * Scalar(V4(10, 10, 10, 1)), Evp, cam->pv());
 			this->window->SwapBuffers();
 			frameIndex++;
