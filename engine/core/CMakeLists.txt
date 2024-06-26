@@ -5,7 +5,8 @@
 SET(files_core
 	MathLibrary.h
 	app.h
-	app.cc)
+	app.cc
+	glad.c)
 SOURCE_GROUP("core" FILES ${files_core})
 	
 SET(files_pch ../config.h ../config.cc)

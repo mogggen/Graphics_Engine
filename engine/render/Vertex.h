@@ -4,7 +4,8 @@
 struct Vertex
 {
 	V3 pos;
-	V4 tangentBiTangentSignedScalar;
-	V2 texel;
 	V3 normal;
+	V2 texel;
+	V3 tangent;
+	V3 biTangent;
 };

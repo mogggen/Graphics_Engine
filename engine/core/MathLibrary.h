@@ -1153,9 +1153,8 @@ inline M4 Rotation(V4 line, float theta)
 /// </summary>
 /// <param name="pos">all 0s = identity matrix</param>
 /// <returns></returns>
-inline M4 Translate(V4 pos)
+inline M4 Translate(M4 temp, V4 pos)
 {
-	M4 temp;
 	temp[0] = V4(1, 0, 0, pos[0]);
 	temp[1] = V4(0, 1, 0, pos[1]);
 	temp[2] = V4(0, 0, 1, pos[2]);
@@ -1173,9 +1172,8 @@ inline M4 Scalar(float s)
 	return temp;
 }
 
-inline M4 Scalar(V4 v)
+inline M4 Scalar(M4 temp, V4 v)
 {
-	M4 temp;
 	temp[0] = V4(v[0], 0, 0, 0);
 	temp[1] = V4(0, v[1], 0, 0);
 	temp[2] = V4(0, 0, v[2], 0);

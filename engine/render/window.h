@@ -6,6 +6,7 @@
 	(C) 2015-2020 Individual contributors, see AUTHORS file
 */
 //------------------------------------------------------------------------------
+#include "config.h"
 #include <functional>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -23,9 +24,9 @@ public:
 	~Window();
 
 	/// set size of window
-	void SetSize(int32 width, int32 height);
+	void SetSize(int width, int height);
 	/// get size of windows
-	void GetSize(int32 & width, int32 & height);
+	void GetSize(int & width, int & height);
 	/// set title of window
 	void SetTitle(const std::string& title);
 

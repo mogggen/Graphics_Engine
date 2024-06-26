@@ -1,5 +1,5 @@
 #include "config.h"
-#include "Lightning.h"
+#include "Lighting.h"
 
 
 Lighting::Lighting(V3 _pos, V3 _rgb, float _intensity)

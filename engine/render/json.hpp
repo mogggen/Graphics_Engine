@@ -25444,7 +25444,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     null        | `null`                                  | `Z`
     false       | `false`                                 | `F`
     true        | `true`                                  | `T`
-    float32     | number_float                            | `d`
+    float     | number_float                            | `d`
     float64     | number_float                            | `D`
     uint8       | number_unsigned                         | `U`
     int8        | number_integer                          | `i`

@@ -10,7 +10,7 @@
 #include "render/Vertex.h"
 #include "render/MeshResource.h"
 #include "render/Camera.h"
-#include "render/Lightning.h"
+#include "render/Lighting.h"
 #include "render/ShaderResource.h"
 #include "render/GraphicNode.h"
 #include "render/window.h"
@@ -32,8 +32,8 @@ namespace Example
 	private:
 		size_t frameIndex = 0;
 		int width, height;
-		float64 prevX = 0, prevY = 0;
-		float64 senseX = 0, senseY = 0;
+		double prevX = 0, prevY = 0;
+		double senseX = 0, senseY = 0;
 		bool w, a, s, d,
 			q, e, isRotate = false;
 		M4 Em;

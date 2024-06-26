@@ -7,6 +7,7 @@
 	(C) 2015-2020 Individual contributors, see AUTHORS file
 */
 //------------------------------------------------------------------------------
+#include <GL/glad.h>
 #include <GL/glew.h>
 namespace Core
 {

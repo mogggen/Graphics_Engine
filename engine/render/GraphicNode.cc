@@ -8,7 +8,7 @@
 
 GraphicNode::GraphicNode(std::shared_ptr<MeshResource> geometry, std::shared_ptr<TextureResource> texture, std::shared_ptr<ShaderResource> shader, M4 transform) : Geometry(geometry), Texture(texture), Shader(shader), Transform(transform)
 {
-	Transform = Translate(V4());
+	Transform = Translate(Transform, V4());
 }
 
 

@@ -123,9 +123,10 @@ std::shared_ptr<MeshResource> MeshResource::LoadObj(const char *pathToFile)
 							break;
 							vertices.push_back(Vertex{
 								coords[(listOfIndices[i][0]) - 1],
-								V4(1, 1, 1, 1),
-								texels[(listOfIndices[i][1]) - 1],
 								normals[(listOfIndices[i][2]) - 1],
+								texels[(listOfIndices[i][1]) - 1],
+								V3(1, 1, 1),
+								V3(1, 1, 1)
 							});
 					}
 
@@ -165,9 +166,10 @@ std::shared_ptr<MeshResource> MeshResource::LoadObj(const char *pathToFile)
 
 							vertices.push_back(Vertex{
 								coords[listOfIndices[i][0] - 1],
-								V4(1, 1, 1, 1),
-								texels[listOfIndices[i][1] - 1],
 								normals[listOfIndices[i][2] - 1],
+								texels[listOfIndices[i][1] - 1],
+								V3(1, 1, 1),
+								V3(1, 1, 1),
 							});
 						indices.push_back(vertices.size() - 1);
 					}
@@ -356,9 +358,10 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 					resVert.push_back(
 						{
 							position3[i],
-							tangent3.empty() ? V4(1, 1, 1, 1) : tangent3[i],
-							texel2.empty() ? V2(1, 1) : texel2[i],
 							normal3.empty() ? V3(0.5, 0.5, 0.5) : normal3[i],
+							texel2.empty() ? V2(1, 1) : texel2[i],
+							tangent3.empty() ? V3(1, 1, 1) : tangent3[i],
+							V3(),
 						});
 				}
 
