@@ -5,13 +5,15 @@ find_package (OpenGL REQUIRED)
 set (GLEW_LIBRARIES ${OPENGL_LIBRARIES})
 include_directories (${GLEW_DIR}/include)
 
-set(GLEW_HEAD 
-	${GLEW_DIR}/include/GL/glad.h
+set(GLEW_HEAD
+	${GLEW_DIR}/include/glad/glad.h
+	${GLEW_DIR}/include/KHR/khrplatform.h
 	${GLEW_DIR}/include/GL/glew.h
 	${GLEW_DIR}/include/GL/wglew.h
 	${GLEW_DIR}/include/GL/glxew.h)
 
 set(GLEW_SRC
+	${GLEW_DIR}/src/glad.c
 	${GLEW_DIR}/src/glew.c
 )
 

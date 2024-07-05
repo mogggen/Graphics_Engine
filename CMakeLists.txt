@@ -2,7 +2,7 @@
 # gscept laboration environment
 #--------------------------------------------------------------------------
 PROJECT(gscept_lab_env)
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+cmake_minimum_required(VERSION 3.2)
 
 SET(CMAKE_BUILD_TYPE Debug)
 MACRO(TARGET_PCH target path)

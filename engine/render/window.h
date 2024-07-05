@@ -7,10 +7,10 @@
 */
 //------------------------------------------------------------------------------
 #include "config.h"
-#include <functional>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <nanovg.h>
+#include <functional>
 #include <string>
 
 namespace Display
