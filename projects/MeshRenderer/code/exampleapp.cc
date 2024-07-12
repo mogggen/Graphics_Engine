@@ -40,31 +40,31 @@ float lastFrame = 0.0f;
 bool ExampleApp::Open()
 {
         App::Open();
-        //this->window = new Display::Window;
+        this->window = new Display::Window;
 
         //srand((unsigned)time(nullptr));
 
         //assign ExampleApp variables
         w = a = s = d = q = e = false;
-        //window->GetSize(width, height);
+        window->GetSize(width, height);
         Em = Evp = Translate(M4(), V4());
-        //window->SetKeyPressFunction([this](int32 keycode, int32 scancode, int32 action, int32 mods)
-        //{
-        //    //deltatime
-        //    switch (keycode)
-        //    {
-        //    case GLFW_KEY_ESCAPE: window->Close(); break;
-        //    case GLFW_KEY_W: w = action; break;
-        //    case GLFW_KEY_S: s = action; break;
-        //    case GLFW_KEY_A: a = action; break;
-        //    case GLFW_KEY_D: d = action; break;
+        window->SetKeyPressFunction([this](int32 keycode, int32 scancode, int32 action, int32 mods)
+        {
+            //deltatime
+            switch (keycode)
+            {
+            case GLFW_KEY_ESCAPE: window->Close(); break;
+            case GLFW_KEY_W: w = action; break;
+            case GLFW_KEY_S: s = action; break;
+            case GLFW_KEY_A: a = action; break;
+            case GLFW_KEY_D: d = action; break;
 
-        //    case GLFW_KEY_Q: q = action; break;
-        //    case GLFW_KEY_E: e = action; break;
-        //    }
-        //});
+            case GLFW_KEY_Q: q = action; break;
+            case GLFW_KEY_E: e = action; break;
+            }
+        });
 
-        /*window->SetMousePressFunction([this](int32 button, int32 action, int32 mods)
+        window->SetMousePressFunction([this](int32 button, int32 action, int32 mods)
         {
             isRotate = button == GLFW_MOUSE_BUTTON_1 && action;
             if (!isRotate)
@@ -72,9 +72,9 @@ bool ExampleApp::Open()
                 prevX = senseX;
                 prevY = senseY;
             }
-        });*/
+        });
 
-        /*window->SetMouseMoveFunction([this](float64 x, float64 y)
+        window->SetMouseMoveFunction([this](float64 x, float64 y)
         {
             if (isRotate)
             {
@@ -82,7 +82,7 @@ bool ExampleApp::Open()
                 senseY = prevY + (0.002 * (y - height / 2));
                 Evp = Rotation(V4(1, 0, 0), senseY) * Rotation(V4(0, 1, 0), senseX);
             }
-        });*/
+        });
         
          // five randomly selected models: avocado, sphere, cube, pyramid, monkey, teapot
         return true;
@@ -173,30 +173,7 @@ bool ExampleApp::Open()
 void ExampleApp::Run()
 {
     camera.setPos(V3(0.f, 0.f, 5.f));
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "StreetWalker 2", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return;
-    }
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return;
-    }
-
+    
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
@@ -209,7 +186,7 @@ void ExampleApp::Run()
     std::shared_ptr<tinygltf::Model> avocadoModel = GraphicNode::load_gltf("textures/Avocado.glb");
 
     std::shared_ptr<GraphicNode> avocadoNode;
-      avocadoNode->setGeometry(MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*avocadoModel)));
+    avocadoNode->setGeometry(MeshResource::LoadGLTF(static_cast<const tinygltf::Model&>(*avocadoModel)));
 
     // TODO: random locations
     std::vector<V3> objectPositions;
@@ -294,25 +271,15 @@ void ExampleApp::Run()
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
+    while (!window->IsOpen())
     {
-        // per-frame time logic
-        // --------------------
         auto currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
-        processInput(window);
-
-        // render
-        // ------
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 1. geometry pass: render scene's geometry/color data into gbuffer
-        // -----------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         M4 proj = projection(90.f, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -381,7 +348,7 @@ void ExampleApp::Run()
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
+        this->window->SwapBuffers();
         glfwPollEvents();
     }
 
@@ -496,24 +463,6 @@ void renderQuad()
     glBindVertexArray(0);
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
-{
-    
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
