@@ -45,8 +45,9 @@ std::shared_ptr<tinygltf::Model> GraphicNode::load_gltf(const std::string& fileP
 
 void GraphicNode::DrawScene(const M4& model, const M4& view, const M4& projection)
 {
-	Texture->BindTexture();
-	Texture->BindNormalMap();
+	/*Texture->BindTexture(Texture->diffuseAlbedo, 0);
+	Texture->BindTexture(Texture->normalMap, 1);
+    Texture->BindTexture(Texture->specularMap, 2);*/
 
 	glUseProgram(this->Shader->program);
 	// TODO: update these to match with the shaders fields
@@ -55,7 +56,6 @@ void GraphicNode::DrawScene(const M4& model, const M4& view, const M4& projectio
 	glUniformMatrix4fv(glGetUniformLocation(Shader->program, "model"), 1, GL_TRUE, (float*)&model);
 	glUniformMatrix4fv(glGetUniformLocation(Shader->program, "view"), 1, GL_TRUE, (float*)&view);
 	glUniformMatrix4fv(glGetUniformLocation(Shader->program, "projection"), 1, GL_TRUE, (float*)&projection);
-
 
 	Geometry->render();
 }

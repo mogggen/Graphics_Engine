@@ -451,6 +451,7 @@ inline float Length(V3 vector)
 inline V3 Normalize(V3 vector)
 {
 	float length = Length(vector);
+    if (length == 0) return vector;
 	for (char i = 0; i < 3; i++)
 		vector[i] /= length;
 	return vector;
@@ -1155,32 +1156,32 @@ inline M4 Rotation(V4 line, float theta)
 /// <returns></returns>
 inline M4 Translate(V4 pos)
 {
-	M4 temp;
-	temp[0] = V4(1, 0, 0, pos[0]);
-	temp[1] = V4(0, 1, 0, pos[1]);
-	temp[2] = V4(0, 0, 1, pos[2]);
-	temp[3] = V4(0, 0, 0, 1);
-	return temp;
+    M4 lhs;
+	lhs[0] = V4(1, 0, 0, pos[0]);
+	lhs[1] = V4(0, 1, 0, pos[1]);
+	lhs[2] = V4(0, 0, 1, pos[2]);
+	lhs[3] = V4(0, 0, 0, 1);
+	return lhs;
 }
 
 inline M4 Scalar(float s)
 {
-	M4 temp;
-	temp[0] = V4(s, 0, 0, 0);
-	temp[1] = V4(0, s, 0, 0);
-	temp[2] = V4(0, 0, s, 0);
-	temp[3] = V4(0, 0, 0, 1);
-	return temp;
+    M4 lhs;
+	lhs[0] = V4(s, 0, 0, 0);
+	lhs[1] = V4(0, s, 0, 0);
+	lhs[2] = V4(0, 0, s, 0);
+	lhs[3] = V4(0, 0, 0, 1);
+	return lhs;
 }
 
 inline M4 Scalar(V4 v)
 {
-	M4 temp;
-	temp[0] = V4(v[0], 0, 0, 0);
-	temp[1] = V4(0, v[1], 0, 0);
-	temp[2] = V4(0, 0, v[2], 0);
-	temp[3] = V4(0, 0, 0, 1);
-	return temp;
+    M4 lhs;
+	lhs[0] = V4(v[0], 0, 0, 0);
+	lhs[1] = V4(0, v[1], 0, 0);
+	lhs[2] = V4(0, 0, v[2], 0);
+	lhs[3] = V4(0, 0, 0, 1);
+	return lhs;
 }
 
 /// <param name="fov:">field of view, in degrees</param>
@@ -1189,17 +1190,16 @@ inline M4 Scalar(V4 v)
 /// <param name="f:">farplane</param>
 inline M4 projection(float fov, float aspect, float n, float f)
 {
-	M4 temp;
-	// solution
-	float d = tanf(2 * M_PI - fov * (M_PI / 180) / 2);
+	float d = tanf(2 * M_PI - fov * (M_PI / 90));
 
-	temp[0][0] = d / aspect;
-	temp[1][1] = d;
-	temp[2][2] = (f + n) / (n - f);
-	temp[2][3] = 2 * f * n / (n - f);
-	temp[3][2] = -1;
+    M4 lhs;
+	lhs[0][0] = d / aspect;
+	lhs[1][1] = d;
+	lhs[2][2] = (f + n) / (n - f);
+	lhs[2][3] = 2 * f * n / (n - f);
+	lhs[3][2] = -1;
 
-	return temp;
+	return lhs;
 }
 
 #pragma endregion

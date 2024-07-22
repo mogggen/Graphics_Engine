@@ -1,23 +1,25 @@
 #include "config.h"
 #include "render/TextureResource.h"
 
-TextureResource::TextureResource(const std::string& file) : file(file)
+TextureResource::TextureResource(const std::string & _texturePath, const std::string & _normalMapPath, const std::string& _specularMapPath)
 {
-
+    LoadTextureFromFile(&diffuseAlbedo, 0, _texturePath);
+    LoadTextureFromFile(&normalMap, 1, _normalMapPath);
+    LoadTextureFromFile(&specularMap, 2, _specularMapPath);
 }
 
-void TextureResource::LoadTextureFromFile()
+void TextureResource::LoadTextureFromFile(GLuint* texture, unsigned index, const std::string& texturePath)
 {
 	int imgWidth, imgHeight, nrChannels;
 
-	const unsigned char* img = stbi_load(file.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
+	const unsigned char* img = stbi_load(texturePath.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
 	if (img == nullptr)
 	{
-		printf("Image loaded incorrectly");
+		printf("%i %u %s: Image loaded incorrectly\n", *texture, index, texturePath.c_str());
 		exit(1);
 	}
 
-	glGenTextures(1, &texture);
+	glGenTextures(1, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -34,43 +36,12 @@ void TextureResource::LoadTextureFromFile()
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	BindTexture();
+	BindTexture(*texture, index);
 }
 
-void TextureResource::LoadNormalMapFromFile(const std::string& normalMapPath)
+void TextureResource::LoadTextureFromBuffer(GLuint* texture, unsigned index, const unsigned char* textureBuf, int w, int h, int comp)
 {
-	int imgWidth, imgHeight, nrChannels;
-
-	const unsigned char* img = stbi_load(normalMapPath.c_str(), &imgWidth, &imgHeight, &nrChannels, STBI_rgb);
-	if (img == nullptr)
-	{
-		printf("Image loaded incorrectly");
-		exit(1);
-	}
-
-	glGenTextures(1, &normalMap);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (nrChannels == 3)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
-	}
-
-	else if (nrChannels == 4)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
-	}
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	BindNormalMap();
-}
-
-void TextureResource::LoadTextureFromModel(const unsigned char* textureBuf, int w, int h, int comp)
-{
-	glGenTextures(1, (GLuint*)(&texture));
+	glGenTextures(1, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -87,41 +58,15 @@ void TextureResource::LoadTextureFromModel(const unsigned char* textureBuf, int 
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	BindTexture();
-}
-void TextureResource::LoadNormalMapFromModel(const unsigned char* normalMapBuf, int w, int h, int comp)
-{
-	glGenTextures(1, (GLuint*)(&normalMap));
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (comp == 3)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, normalMapBuf);
-	}
-
-	else if (comp == 4)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, normalMapBuf);
-	}
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	BindTexture();
+	BindTexture(*texture, index);
 }
 
-
-void TextureResource::BindTexture()
+void TextureResource::BindTexture(GLuint textureHandle, unsigned index)
 {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-}
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-void TextureResource::BindNormalMap()
-{
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normalMap);
+    glActiveTexture(GL_TEXTURE0);
 }
 
 TextureResource::~TextureResource()
@@ -131,6 +76,7 @@ TextureResource::~TextureResource()
 
 void TextureResource::Destroy()
 {
-	glDeleteTextures(1, &texture);
+	glDeleteTextures(1, &diffuseAlbedo);
 	glDeleteTextures(1, &normalMap);
+    glDeleteTextures(1, &specularMap);
 }

@@ -5,17 +5,14 @@
 
 class TextureResource
 {
-	GLuint texture;
-	std::string file;
-public:
-	GLuint normalMap;
-	TextureResource(const std::string& file);
-	~TextureResource();
+	void BindTexture(GLuint textureHandle, unsigned index);
 	void Destroy();
-	void BindTexture();
-	void BindNormalMap();
-	void LoadTextureFromFile();
-	void LoadNormalMapFromFile(const std::string& normalMapPath);
-	void LoadTextureFromModel(const unsigned char* texture, int w, int h, int comp);
-	void LoadNormalMapFromModel(const unsigned char* normalMap, int w, int h, int comp);
+public:
+	GLuint diffuseAlbedo;
+	GLuint normalMap;
+    GLuint specularMap;
+	TextureResource(const std::string & _texturePath, const std::string & _normalMapPath, const std::string& _specularMapPath);
+	~TextureResource();
+	void LoadTextureFromFile(GLuint* textureHandle, unsigned index, const std::string& texturePath);
+	void LoadTextureFromBuffer(GLuint* textureHandle, unsigned index, const unsigned char* texture, int w, int h, int comp);
 };

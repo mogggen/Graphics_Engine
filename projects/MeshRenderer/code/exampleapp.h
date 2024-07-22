@@ -20,14 +20,9 @@ namespace Example
 	class ExampleApp : public Core::App
 	{
 	public:
-		/// constructor
 		ExampleApp();
-		/// destructor
 		~ExampleApp();
-
-		/// open app
 		bool Open();
-		/// run app
 		void Run();
 	private:
 		size_t frameIndex = 0;
@@ -36,21 +31,15 @@ namespace Example
 		float64 senseX = 0, senseY = 0;
 		bool w, a, s, d,
 			q, e, isRotate = false;
-		M4 Em;
-		M4 Evp;
-		GLuint program;
-		GLuint vertexShader;
-		GLuint pixelShader;
 
 		std::shared_ptr<tinygltf::Model> model;
 		std::shared_ptr<Camera> cam;
-		std::shared_ptr<MeshResource> cube;
-		std::shared_ptr<ShaderResource> shaderResource;
-		std::shared_ptr<GraphicNode> node;
 
-		std::shared_ptr<MeshResource> monkey;
-		std::shared_ptr<ShaderResource> shaderResourceSusanne;
-		std::shared_ptr<GraphicNode> susanne;
+        std::shared_ptr<MeshResource> mesh;
+        std::shared_ptr<TextureResource> texture;
+        std::shared_ptr<ShaderResource> shaderGeometryPass;
+        std::shared_ptr<ShaderResource> shaderLightingPass;
+        std::shared_ptr<ShaderResource> shaderLightBoxPass;
 
 		Display::Window* window;
 	};

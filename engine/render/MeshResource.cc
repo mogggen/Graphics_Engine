@@ -8,13 +8,13 @@ MeshResource::MeshResource(Vertex vertices[], uint32_t Verticeslength, uint32_t 
 	glGenBuffers(1, &this->vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * Verticeslength, vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &this->indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indicesLength, indices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 }
 
 void MeshResource::render()
@@ -27,10 +27,10 @@ void MeshResource::render()
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL); // position
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)(sizeof(GLfloat) * 3));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)(sizeof(GLfloat) * 7));
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)(sizeof(GLfloat) * 9));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)(sizeof(GLfloat) * 7)); // texel
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)(sizeof(GLfloat) * 9)); // normal
 
 	glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
 
@@ -253,10 +253,10 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 				const char* normalData = &binaryData[normalBufferView.byteOffset];
 
 
-				//int tangentAccessorIndex = primitive.attributes.at("TANGENT");
-				//const tinygltf::Accessor& tangentAccessor = model.accessors[tangentAccessorIndex];
-				//const tinygltf::BufferView& tangentBufferView = model.bufferViews[tangentAccessor.bufferView];
-				//const char* tangentData = &binaryData[tangentBufferView.byteOffset];
+				int tangentAccessorIndex = primitive.attributes.at("TANGENT");
+				const tinygltf::Accessor& tangentAccessor = model.accessors[tangentAccessorIndex];
+				const tinygltf::BufferView& tangentBufferView = model.bufferViews[tangentAccessor.bufferView];
+				const char* tangentData = &binaryData[tangentBufferView.byteOffset];
 
 				// Access the accessor for normals
 				int texelAccessorIndex = primitive.attributes.at("TEXCOORD_0");
@@ -294,15 +294,15 @@ std::shared_ptr<MeshResource> MeshResource::LoadGLTF(const tinygltf::Model& mode
 					}
 				}
 
-				//for (size_t i = 0; i < tangentAccessor.count; ++i) {
-				//	const void* tangentPtr = tangentData + i * tangentAccessor.ByteStride(tangentBufferView);
+				for (size_t i = 0; i < tangentAccessor.count; ++i) {
+					const void* tangentPtr = tangentData + i * tangentAccessor.ByteStride(tangentBufferView);
 
-				//	// Assuming tangents are 3D (x, y, z)
-				//	const float* tangent = reinterpret_cast<const float*>(tangentPtr);
-				//	for (int j = 0; j < 3; ++j) {
-				//		tempTangentBuffer.push_back(tangent[j]);
-				//	}
-				//}
+					// Assuming tangents are 3D (x, y, z)
+					const float* tangent = reinterpret_cast<const float*>(tangentPtr);
+					for (int j = 0; j < 3; ++j) {
+						tempTangentBuffer.push_back(tangent[j]);
+					}
+				}
 
 				for (size_t i = 0; i < texelAccessor.count; ++i) {
 					const void* texelPtr = texelData + i * texelAccessor.ByteStride(texelBufferView);
