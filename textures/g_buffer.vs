@@ -1,9 +1,20 @@
 #version 430
-layout(location=0) in vec2 texturesOut;
-layout(location=1) in vec3 fragPosOut;
-layout(location=2) in vec3 normalOut;
-layout(location=3) in vec3 tangentOut; // Tangent from the vertex shader
-layout(location=4) in vec3 bitangentOut; // Bitangent from the vertex shader
+
+layout(location=0) in vec3 posIn;
+layout(location=1) in vec4 colorIn;
+layout(location=2) in vec2 texturesIn;
+layout(location=3) in vec3 normalIn;
+layout(location=4) in vec3 tangentIn;
+layout(location=5) in vec3 bitangentIn;
+
+layout(location=0) out vec2 texturesOut;
+layout(location=1) out vec3 fragPosOut;
+layout(location=2) out vec3 normalOut;
+layout(location=3) out vec3 tangentOut;
+layout(location=4) out vec3 bitangentOut;
+
+uniform mat4 m4ProjViewPos;
+uniform mat4 m4Pos;
 
 uniform vec3 lightColor;
 uniform vec3 lightPos;
@@ -18,6 +29,14 @@ out vec4 Color;
 
 void main()
 {
+	gl_Position = m4ProjViewPos * m4Pos * vec4(posIn, 1.0);
+	
+	fragPosOut = (m4Pos * vec4(posIn, 1.0)).xyz;
+	normalOut = mat3(transpose(inverse(m4Pos))) * normalIn;
+	tangentOut = mat3(transpose(inverse(m4Pos))) * tangentIn;
+	bitangentOut = mat3(transpose(inverse(m4Pos))) * bitangentIn;
+	texturesOut = texturesIn;
+
 	vec3 viewDir = normalize(camPos - fragPosOut);
 	vec3 lightDir = normalize(lightPos - fragPosOut);
 

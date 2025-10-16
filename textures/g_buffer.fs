@@ -14,29 +14,27 @@ uniform float specularIntensity;
 uniform sampler2D textureArray;
 uniform sampler2D normalMap; // Your normal map texture
 
-out vec4 Color;
+out vec4 gPosition;
+out vec4 gNormal;
+out vec4 gAlbedoSpec;
 
 void main()
 {
-	vec3 viewDir = normalize(camPos - fragPosOut);
-	vec3 lightDir = normalize(lightPos - fragPosOut);
-
+	// Store the fragment position vector in the first gbuffer texture
+	gPosition = vec4(fragPosOut, 1.0);
+	
 	// Sample the normal from the normal map
-	vec3 normalTex = texture(textureArray, texturesOut).xyz;
+	vec3 normalTex = texture(normalMap, texturesOut).xyz;
 	normalTex = normalize(normalTex * 2.0 - 1.0); // Convert from [0, 1] to [-1, 1]
-
+	
 	// Tangent space to world space transformation for normals
 	mat3 TBN = mat3(tangentOut, bitangentOut, normalOut);
-	vec3 normal = normalize(TBN * normalTex); // Transform normal from tangent to world space
-
-	vec3 halfwayDir = normalize(lightDir + viewDir);
-	vec3 ambientLight = lightIntensity * lightColor;
-
-	float diff = max(dot(normal, lightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
-
-	float spec = pow(max(dot(normal, halfwayDir), 0.0), 64);
-	vec3 specular = lightColor * spec * specularIntensity;
-
-	Color = texture(normalMap, texturesOut) * vec4(ambientLight + diffuse + specular, 1.0);
+	vec3 normal = normalize(TBN * normalTex);
+	
+	// Store the normal vector in the second gbuffer texture
+	gNormal = vec4(normal, 1.0);
+	
+	// Store the fragment's albedo color and specular intensity
+	vec4 albedo = texture(textureArray, texturesOut);
+	gAlbedoSpec = vec4(albedo.rgb, specularIntensity);
 }
